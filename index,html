@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Review API</title>
+    <script>
+        const apiUrl = 'http://127.0.0.1:5000/movies';
+
+        // Function to get and display all movie reviews
+        function fetchMovies() {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const moviesList = document.getElementById('movies-list');
+                    moviesList.innerHTML = '';
+                    data.forEach(movie => {
+                        const movieItem = document.createElement('li');
+                        movieItem.innerHTML = `
+                            <strong>${movie.title}</strong> - Rating: ${movie.rating}<br>
+                            Review: ${movie.review}<br>
+                            Date: ${movie.date}
+                            <button onclick="deleteMovie('${movie.title}')">Delete</button>
+                        `;
+                        moviesList.appendChild(movieItem);
+                    });
+                });
+        }
+
+        // Function to create a new movie review
+        function addMovie() {
+            const title = document.getElementById('title').value;
+            const review = document.getElementById('review').value;
+            const rating = document.getElementById('rating').value;
+            const date = new Date().toLocaleDateString();
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, review, rating, date })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Movie added successfully');
+                fetchMovies(); // Refresh the list after adding a movie
+            });
+        }
+
+        // Function to delete a movie review
+        function deleteMovie(title) {
+            fetch(`${apiUrl}/${title}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Movie deleted successfully');
+                    fetchMovies(); // Refresh the list after deleting a movie
+                });
+        }
+
+        window.onload = fetchMovies;
+    </script>
+</head>
+<body>
+    <h1>Movie Review Database</h1>
+    <form onsubmit="event.preventDefault(); addMovie();">
+        <input type="text" id="title" placeholder="Movie Title" required>
+        <textarea id="review" placeholder="Write your review here..." required></textarea>
+        <input type="number" id="rating" placeholder="Rating (1-10)" min="1" max="10" required>
+        <button type="submit">Add Movie</button>
+    </form>
+
+    <h2>Movie Reviews</h2>
+    <ul id="movies-list">
+        <!-- Movie reviews will be listed here -->
+    </ul>
+</body>
+</html>
